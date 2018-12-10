@@ -24,7 +24,7 @@ const particlesOptions = {
 const initialState = {
   input: '',
   imageUrl: '',
-  box: {},
+  faceBoxLocations: [{}],
   route: 'signin',
   isSignedIn: false,
   user: {
@@ -52,11 +52,11 @@ class App extends Component {
     }})
   }
 
-  calculateFaceLocation = (data) => {
-    const clarifaiFace = data.outputs[0].data.regions[0].region_info.bounding_box;
-    const image = document.getElementById('inputimage');
-    const width = Number(image.width);
-    const height = Number(image.height);
+  calculateFaceBoxLocation = (faceBoxRegion) => {
+    const clarifaiFace = faceBoxRegion.region_info.bounding_box
+    const image = document.getElementById('inputimage')
+    const width = Number(image.width)
+    const height = Number(image.height)
     return {
       leftCol: clarifaiFace.left_col * width,
       topRow: clarifaiFace.top_row * height,
@@ -65,8 +65,8 @@ class App extends Component {
     }
   }
 
-  displayFaceBox = (box) => {
-    this.setState({box: box});
+  updateFaceBoxLocations = (faceBoxLocations) => {
+    this.setState({faceBoxLocations})
   }
 
   onInputChange = (event) => {
@@ -99,7 +99,11 @@ class App extends Component {
             .catch(console.log)
 
         }
-        this.displayFaceBox(this.calculateFaceLocation(response))
+
+        const faceBoxRegions = response.outputs[0].data.regions
+        const faceBoxLocations = faceBoxRegions.map(this.calculateFaceBoxLocation)
+        
+        this.updateFaceBoxLocations(faceBoxLocations)
       })
       .catch(err => console.log(err));
   }
@@ -114,7 +118,7 @@ class App extends Component {
   }
 
   render() {
-    const { isSignedIn, imageUrl, route, box } = this.state;
+    const { isSignedIn, imageUrl, route, faceBoxLocations } = this.state;
     return (
       <div className="App">
          <Particles className='particles'
@@ -132,7 +136,7 @@ class App extends Component {
                 onInputChange={this.onInputChange}
                 onButtonSubmit={this.onButtonSubmit}
               />
-              <FaceRecognition box={box} imageUrl={imageUrl} />
+              <FaceRecognition faceBoxLocations={faceBoxLocations} imageUrl={imageUrl} />
             </div>
           : (
              route === 'signin'
