@@ -99,7 +99,7 @@ class App extends Component {
             .catch(console.log)
 
         }
-
+        
         const faceBoxRegions = response.outputs[0].data.regions
         const faceBoxLocations = faceBoxRegions.map(this.calculateFaceBoxLocation)
         
